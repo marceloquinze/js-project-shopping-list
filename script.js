@@ -1,10 +1,29 @@
+/**
+ * Summary
+ * 1 Global Variables
+ * 2 Functions
+ * 		a) When we click the submit button
+ * 		b) How do we add items to DOM?
+ * 		c) How do we add items to local storage?
+ * 		d) Create Button
+ *		e) Create Icons
+ *		f) Removing items
+ *		g) Clearing items
+ *		h) Filtering items
+ *		i) Resetting UI State
+ * 3 Event Listeners
+ */
+
+// 1 Global Variables
 const itemForm = document.querySelector('#item-form');
 const itemInput = document.querySelector('#item-input');
-const itemList = document.querySelector('#item-list');
+const itemList = document.querySelector('#item-list'); //ul
 const clearBtn = document.querySelector('#clear');
 const itemFilter = document.querySelector('.filter');
 
-const addItem = (e) => {
+// 2 Functions
+// a) When we click the submit button
+const onAddItemSubmit = (e) => {
 	e.preventDefault();
 
 	// Vars
@@ -16,9 +35,23 @@ const addItem = (e) => {
 		return;
 	}
 
-	// Elements
+	// Create item DOM element
+	addItemToDOM(newItem);
+
+	// Add item to local storage
+	addItemToStorage(newItem);
+
+	// Check the UI as soon as we create the <li>s
+	resetState();
+
+	// Clear input after creating elements
+	itemInput.value = '';
+};
+
+// b) How do we add items to DOM?
+const addItemToDOM = (item) => {
 	const li = document.createElement('li');
-	li.appendChild(document.createTextNode(newItem));
+	li.appendChild(document.createTextNode(item));
 
 	const button = createButton('remove-item btn-link text-red');
 	const icon = createIcon('fa-solid fa-xmark');
@@ -27,26 +60,40 @@ const addItem = (e) => {
 	button.appendChild(icon);
 	li.appendChild(button);
 	itemList.appendChild(li);
-	// Check the UI as soon as we create the <li>s
-	resetState();
-
-	// Clear input after creating elements
-	itemInput.value = '';
 };
 
-// Accessory Functions
+// c) How do we add items to local storage?
+const addItemToStorage = (item) => {
+	let itemsFromStorage;
+
+	if (localStorage.getItem('items') === null) {
+		itemsFromStorage = [];
+	} else {
+		itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+	}
+
+	// Add new item to array
+	itemsFromStorage.push(item);
+
+	// Convert to JSON string and set to local storage
+	localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+};
+
+// d) Create Button
 const createButton = (classes) => {
 	const button = document.createElement('button');
 	button.className = classes;
 	return button;
 };
 
+// e) Create Icons
 const createIcon = (classes) => {
 	const icon = document.createElement('i');
 	icon.className = classes;
 	return icon;
 };
 
+// f) Removing items
 const removeItem = (e) => {
 	// Only remove if we click on an element whose parent has a certain class
 	if (e.target.parentElement.classList.contains('remove-item')) {
@@ -58,6 +105,7 @@ const removeItem = (e) => {
 	}
 };
 
+// g) Clearing items
 const clearItems = () => {
 	// Remove first child from <ul> while they exist
 	while (itemList.firstChild) {
@@ -66,6 +114,7 @@ const clearItems = () => {
 	resetState();
 };
 
+// h) Filtering items
 const filterItems = (e) => {
 	const items = itemList.querySelectorAll('li');
 	const text = e.target.value.toLowerCase();
@@ -81,6 +130,7 @@ const filterItems = (e) => {
 	});
 };
 
+// i) Resetting UI State (remove clear button and filter when no item exists)
 const resetState = () => {
 	// We need to define the <li>s here, upon function call
 	const items = itemList.querySelectorAll('li');
@@ -93,8 +143,8 @@ const resetState = () => {
 	}
 };
 
-// Event Listeners
-itemForm.addEventListener('submit', addItem);
+// 3 Event Listeners
+itemForm.addEventListener('submit', onAddItemSubmit);
 itemList.addEventListener('click', removeItem);
 clearBtn.addEventListener('click', clearItems);
 itemFilter.addEventListener('input', filterItems);
