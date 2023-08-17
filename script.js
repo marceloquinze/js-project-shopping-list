@@ -62,23 +62,6 @@ const addItemToDOM = (item) => {
 	itemList.appendChild(li);
 };
 
-// c) How do we add items to local storage?
-const addItemToStorage = (item) => {
-	let itemsFromStorage;
-
-	if (localStorage.getItem('items') === null) {
-		itemsFromStorage = [];
-	} else {
-		itemsFromStorage = JSON.parse(localStorage.getItem('items'));
-	}
-
-	// Add new item to array
-	itemsFromStorage.push(item);
-
-	// Convert to JSON string and set to local storage
-	localStorage.setItem('items', JSON.stringify(itemsFromStorage));
-};
-
 // d) Create Button
 const createButton = (classes) => {
 	const button = document.createElement('button');
@@ -93,16 +76,64 @@ const createIcon = (classes) => {
 	return icon;
 };
 
-// f) Removing items
-const removeItem = (e) => {
+const displayItems = () => {
+	let itemsFromStorage = getItemsFromStorage();
+	itemsFromStorage.forEach((item) => addItemToDOM(item));
+	resetState();
+};
+
+// c) How do we add items to local storage?
+const addItemToStorage = (item) => {
+	const itemsFromStorage = getItemsFromStorage();
+
+	// Add new item to array
+	itemsFromStorage.push(item);
+
+	// Convert to JSON string and set to local storage (with the new item included)
+	// This process will overwrite the current values on storage. That's why we need all of this work done.
+	// Or else, we could just set new items directly, which is not possible
+	localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+};
+
+const getItemsFromStorage = () => {
+	// We grab items from storage first, then turn them into object,
+	// then add a new item, and give it back to storage
+	let itemsFromStorage;
+
+	// If storage is empty, create a new array for objects
+	if (localStorage.getItem('items') === null) {
+		itemsFromStorage = [];
+	} else {
+		// We want localStorage data as an Object
+		itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+	}
+
+	return itemsFromStorage;
+};
+
+const onClickItem = (e) => {
 	// Only remove if we click on an element whose parent has a certain class
 	if (e.target.parentElement.classList.contains('remove-item')) {
-		// Traverse the DOM and remove the right element: <li>
-		if (confirm('Are you sure?')) {
-			e.target.parentElement.parentElement.remove();
-			resetState();
-		}
+		removeItem(e.target.parentElement.parentElement);
 	}
+};
+
+// f) Removing items
+const removeItem = (item) => {
+	// Traverse the DOM and remove the right element: <li>
+	if (confirm('Are you sure?')) {
+		item.remove();
+
+		removeItemFromStorage(item.textContent);
+
+		resetState();
+	}
+};
+
+const removeItemFromStorage = (item) => {
+	let itemsFromStorage = getItemsFromStorage();
+	itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
+	localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 };
 
 // g) Clearing items
@@ -111,6 +142,10 @@ const clearItems = () => {
 	while (itemList.firstChild) {
 		itemList.removeChild(itemList.firstChild);
 	}
+
+	// Clear from local storage
+	localStorage.removeItem('items');
+
 	resetState();
 };
 
@@ -131,9 +166,12 @@ const filterItems = (e) => {
 };
 
 // i) Resetting UI State (remove clear button and filter when no item exists)
+// Call this after removing and clearing items
 const resetState = () => {
 	// We need to define the <li>s here, upon function call
+	// Else, we won't have access to them, as they would have been already defined
 	const items = itemList.querySelectorAll('li');
+
 	if (items.length === 0) {
 		clearBtn.style.display = 'none';
 		itemFilter.style.display = 'none';
@@ -143,12 +181,18 @@ const resetState = () => {
 	}
 };
 
-// 3 Event Listeners
-itemForm.addEventListener('submit', onAddItemSubmit);
-itemList.addEventListener('click', removeItem);
-clearBtn.addEventListener('click', clearItems);
-itemFilter.addEventListener('input', filterItems);
+// Initialize app
+function init() {
+	// 3 Event Listeners
+	itemForm.addEventListener('submit', onAddItemSubmit);
+	itemList.addEventListener('click', onClickItem);
+	clearBtn.addEventListener('click', clearItems);
+	itemFilter.addEventListener('input', filterItems);
+	document.addEventListener('DOMContentLoaded', displayItems);
 
-// Check if there are items to clear filter and clear button
-// Global Scope
-resetState();
+	// Check if there are items to clear filter and clear button
+	// Global Scope
+	resetState();
+}
+
+init();
