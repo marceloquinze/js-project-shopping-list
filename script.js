@@ -20,6 +20,8 @@ const itemInput = document.querySelector('#item-input');
 const itemList = document.querySelector('#item-list'); //ul
 const clearBtn = document.querySelector('#clear');
 const itemFilter = document.querySelector('.filter');
+const formBtn = itemForm.querySelector('button');
+let isEditMode = false;
 
 // 2 Functions
 // a) When we click the submit button
@@ -115,7 +117,20 @@ const onClickItem = (e) => {
 	// Only remove if we click on an element whose parent has a certain class
 	if (e.target.parentElement.classList.contains('remove-item')) {
 		removeItem(e.target.parentElement.parentElement);
+	} else {
+		setItemToEdit(e.target);
 	}
+};
+
+const setItemToEdit = (item) => {
+	isEditMode = true;
+
+	itemList.querySelectorAll('li').forEach((i) => i.classList.remove('edit-mode'));
+
+	item.classList.add('edit-mode');
+	formBtn.innerHTML = '<i class="fa-solid fa-pen"></i>  Update Item';
+	formBtn.style.backgroundColor = '#228B22';
+	itemInput.value = item.textContent;
 };
 
 // f) Removing items
