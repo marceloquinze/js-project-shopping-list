@@ -12,6 +12,7 @@
  *		h) Filtering items
  *		i) Resetting UI State
  * 3 Event Listeners
+ * TODO: when we edit an item which has similar names, then we can have duplicated items (Sopas, Sopa = edit Sopas => Sopas twice)
  */
 
 // 1 Global Variables
@@ -44,6 +45,11 @@ const onAddItemSubmit = (e) => {
 		itemToEdit.classList.remove('edit-mode');
 		itemToEdit.remove();
 		isEditMode = false;
+	} else {
+		if (checkIfExists(newItem)) {
+			alert('That item already exists!');
+			return;
+		}
 	}
 
 	// Create item DOM element
@@ -129,6 +135,11 @@ const onClickItem = (e) => {
 	} else {
 		setItemToEdit(e.target);
 	}
+};
+
+const checkIfExists = (item) => {
+	const itemsFromStorage = getItemsFromStorage();
+	return itemsFromStorage.includes(item);
 };
 
 const setItemToEdit = (item) => {
