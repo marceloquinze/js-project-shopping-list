@@ -4,15 +4,23 @@
  * 2 Functions
  * 		a) When we click the submit button
  * 		b) How do we add items to DOM?
- * 		c) How do we add items to local storage?
- * 		d) Create Button
- *		e) Create Icons
- *		f) Removing items
- *		g) Clearing items
- *		h) Filtering items
- *		i) Resetting UI State
+ * 		c) Create Button
+ *		d) Create Icons
+ * 		e) How do we add items to local storage?
+ * 		f) What happens when we click on an item
+ * 		g) Check if an item exists
+ * 		h) Editing an item
+ *		i) Removing items
+ *		j) Removing an item from storage
+ *		l) Clearing items
+ *		m) Filtering items
+ *		n) Resetting UI State
+ *		o) Validations
+ *		p) Initialize app
+ *			// All Event Listeners
  * 3 Event Listeners
- * TODO: when we edit an item which has similar names, then we can have duplicated items (Sopas, Sopa = edit Sopas => Sopas twice)
+ * TODO 1: when we edit an item which has similar names, then we can have duplicated items (Sopas, Sopa = edit Sopas => Sopas twice)
+ * TODO 2: when we click in the ul, all of the items are being targeted
  */
 
 // 1 Global Variables
@@ -23,18 +31,18 @@ const clearBtn = document.querySelector('#clear');
 const itemFilter = document.querySelector('.filter');
 const formBtn = itemForm.querySelector('button');
 let isEditMode = false;
+const msgDiv = document.querySelector('.messages');
 
 // 2 Functions
 // a) When we click the submit button
 const onAddItemSubmit = (e) => {
 	e.preventDefault();
 
-	// Vars
+	// This is what we type in the input field
 	const newItem = itemInput.value;
 
-	// Validations
-	if (newItem === '') {
-		alert('Please, add an item');
+	const validateIt = validate(newItem);
+	if (validateIt === 'stopAdding') {
 		return;
 	}
 
@@ -77,16 +85,20 @@ const addItemToDOM = (item) => {
 	button.appendChild(icon);
 	li.appendChild(button);
 	itemList.appendChild(li);
+
+	// Hide validation message div
+	msgDiv.textContent = '';
+	msgDiv.classList.remove('alert');
 };
 
-// d) Create Button
+// c) Create Button
 const createButton = (classes) => {
 	const button = document.createElement('button');
 	button.className = classes;
 	return button;
 };
 
-// e) Create Icons
+// d) Create Icons
 const createIcon = (classes) => {
 	const icon = document.createElement('i');
 	icon.className = classes;
@@ -99,7 +111,7 @@ const displayItems = () => {
 	resetState();
 };
 
-// c) How do we add items to local storage?
+// e) How do we add items to local storage?
 const addItemToStorage = (item) => {
 	const itemsFromStorage = getItemsFromStorage();
 
@@ -128,6 +140,7 @@ const getItemsFromStorage = () => {
 	return itemsFromStorage;
 };
 
+// f) What happens when we click on an item
 const onClickItem = (e) => {
 	// Only remove if we click on an element whose parent has a certain class
 	if (e.target.parentElement.classList.contains('remove-item')) {
@@ -137,11 +150,13 @@ const onClickItem = (e) => {
 	}
 };
 
+// g) Check if an item exists
 const checkIfExists = (item) => {
 	const itemsFromStorage = getItemsFromStorage();
 	return itemsFromStorage.includes(item);
 };
 
+// h) Editing an item
 const setItemToEdit = (item) => {
 	isEditMode = true;
 
@@ -153,7 +168,7 @@ const setItemToEdit = (item) => {
 	itemInput.value = item.textContent;
 };
 
-// f) Removing items
+// i) Removing items
 const removeItem = (item) => {
 	// Traverse the DOM and remove the right element: <li>
 	if (confirm('Are you sure?')) {
@@ -165,13 +180,14 @@ const removeItem = (item) => {
 	}
 };
 
+// j) Removing an item from storage
 const removeItemFromStorage = (item) => {
 	let itemsFromStorage = getItemsFromStorage();
 	itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
 	localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 };
 
-// g) Clearing items
+// l) Clearing items
 const clearItems = () => {
 	// Remove first child from <ul> while they exist
 	while (itemList.firstChild) {
@@ -184,7 +200,7 @@ const clearItems = () => {
 	resetState();
 };
 
-// h) Filtering items
+// m) Filtering items
 const filterItems = (e) => {
 	const items = itemList.querySelectorAll('li');
 	const text = e.target.value.toLowerCase();
@@ -200,7 +216,7 @@ const filterItems = (e) => {
 	});
 };
 
-// i) Resetting UI State (remove clear button and filter when no item exists)
+// n) Resetting UI State (remove clear button and filter when no item exists)
 // Call this after removing and clearing items
 const resetState = () => {
 	// We need to define the <li>s here, upon function call
@@ -223,9 +239,18 @@ const resetState = () => {
 	itemInput.value = '';
 };
 
-// Initialize app
+// o) Validations
+const validate = (item) => {
+	if (item === '') {
+		msgDiv.innerHTML = 'Please, add an item';
+		msgDiv.classList.add('alert');
+		return 'stopAdding';
+	}
+};
+
+// p) Initialize app
 function init() {
-	// 3 Event Listeners
+	// All Event Listeners
 	itemForm.addEventListener('submit', onAddItemSubmit);
 	itemList.addEventListener('click', onClickItem);
 	clearBtn.addEventListener('click', clearItems);
