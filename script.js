@@ -20,7 +20,6 @@
  *			// All Event Listeners
  * 3 Event Listeners
  * TODO 1: when we edit an item which has similar names, then we can have duplicated items (Sopas, Sopa = edit Sopas => Sopas twice)
- * TODO 2: when we click in the ul, all of the items are being targeted
  */
 
 // 1 Global Variables
@@ -41,8 +40,8 @@ const onAddItemSubmit = (e) => {
 	// This is what we type in the input field
 	const newItem = itemInput.value;
 
-	const validateIt = validate(newItem);
-	if (validateIt === 'stopAdding') {
+	const validateItem = validate(newItem);
+	if (validateItem === 'stopAdding') {
 		return;
 	}
 
@@ -146,7 +145,12 @@ const onClickItem = (e) => {
 	if (e.target.parentElement.classList.contains('remove-item')) {
 		removeItem(e.target.parentElement.parentElement);
 	} else {
-		setItemToEdit(e.target);
+		// Only enter edit mode if we really click on an <li> element
+		itemList.querySelectorAll('li').forEach((li) => {
+			if (e.target === li) {
+				setItemToEdit(e.target);
+			}
+		});
 	}
 };
 
@@ -166,6 +170,9 @@ const setItemToEdit = (item) => {
 	formBtn.innerHTML = '<i class="fa-solid fa-pen"></i>  Update Item';
 	formBtn.style.backgroundColor = '#228B22';
 	itemInput.value = item.textContent;
+
+	msgDiv.innerHTML = 'Press ESC to exit edit mode';
+	msgDiv.classList.add('info');
 };
 
 // i) Removing items
@@ -234,7 +241,11 @@ const resetState = () => {
 	formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
 	formBtn.style.backgroundColor = '#333';
 
+	// Reset edit mode
 	isEditMode = false;
+	itemList.querySelectorAll('li').forEach((li) => li.classList.remove('edit-mode'));
+	msgDiv.textContent = '';
+	msgDiv.classList.remove('info');
 
 	itemInput.value = '';
 };
@@ -248,6 +259,12 @@ const validate = (item) => {
 	}
 };
 
+const exitEditMode = (e) => {
+	if (e.key === 'Escape') {
+		resetState();
+	}
+};
+
 // p) Initialize app
 function init() {
 	// All Event Listeners
@@ -256,6 +273,7 @@ function init() {
 	clearBtn.addEventListener('click', clearItems);
 	itemFilter.addEventListener('input', filterItems);
 	document.addEventListener('DOMContentLoaded', displayItems);
+	document.addEventListener('keydown', exitEditMode);
 
 	// Check if there are items to clear filter and clear button
 	// Global Scope

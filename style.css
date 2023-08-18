@@ -43,6 +43,11 @@ header h1 {
   padding: 5px 10px;
 }
 
+.info{
+  border: 1px solid rgb(0, 180, 105);
+  padding: 5px 10px;
+}
+
 /* Form & Input */
 .form-input {
   width: 100%;
